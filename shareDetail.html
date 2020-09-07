@@ -1,0 +1,477 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>商品详情</title>
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+		<meta http-equiv="description" content="This is my page">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="viewport"
+			content="initial-scale=1,width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta content="yes" name="apple-touch-fullscreen">
+		<meta name="App-Config"
+			content="fullscreen=yes,useHistoryState=yes,transition=yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="format-detection" content="telephone=no,email=no">
+		<script type="text/javascript" src="./js/jquery-2.1.4.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="./css/shareDetail.css">
+ 		<link rel="stylesheet" href="./css/swiper-bundle.min.css">
+		<script type="text/javascript" src="./js/swiper-bundle.min.js"></script>
+
+		<script type="text/javascript" src="./js/vue.js"></script>
+		<script src="./layer/layer.js"></script>
+		<style>
+			[v-cloak] {
+			   display: none;
+			}
+			html{font-size: 50px;}
+			.swiper-container {
+			    width: 100vw;
+			    height: 100vw;
+			}  
+			.swiper-container2 {
+			   /* width: 6.9rem;*/
+			   overflow: hidden;
+			}  
+			.swiper-pagination2{
+				text-align:center;
+			}
+			.swiper-pagination-bullet-active{
+				background:#48AE72;
+			}
+			.openApp{
+				position:fixed;
+				left:0;top:0;
+				z-index:100;
+			}
+		</style>
+		
+	</head>
+
+	<body>
+		<div id="appid" v-cloak>
+		<div class="container">
+			<div class="openApp" v-if="isapp">
+				<div class="top relative flex align-center justify-between">
+					<img class="close absolute" src="./images/close.png" @click="close">
+					<div class="flex align-center">
+						<img class="logo" src="./images/logo.png">
+						<span class="tip">下单请打开爱木头APP</span>
+					</div>
+					<div class="open" @click="openApp">打开APP</div>
+				</div>
+			</div>
+			<div class="swiper-container">
+			    <div class="swiper-wrapper">
+			        <div class="swiper-slide" v-for="(item,index) in thumb" :key="index">
+			        	<img class="swiper_item" :src="item">
+			        </div>
+			    </div>
+			    <!-- 如果需要分页器 -->
+			    <div class="swiper-pagination"></div>	    
+			</div>
+
+			<div class="special relative flex flex-column justify-center" v-if="goods_type=='2'">
+				<img class="back absolute" src="./images/back.png">
+				<div class="flex align-center">
+						<p class="flex align-center" v-if="price>0"><span class="doll">¥</span><span class="price">{{price}}</span></p><span class="price2" v-else>面议</span><span class="unit">/{{unit}}</span><span class="sale">¥{{sale_price}}/{{unit}}</span>
+				</div>
+				<div class="ypay" v-if="deposit_money>0">
+					<span class="name">预付款：</span><span class="doll">¥</span><span class="price3">{{deposit_money}}</span>
+					<img class="sign" src="./images/icon0.png" @click="login"><span class="min">{{min_nums}}{{unit}}起批</span>
+				</div>
+				<div class="ypay"><span class="min2" v-if="deposit_money==0">{{min_nums}}{{unit}}起批</span></div>
+			</div>
+			<div :class="['header',goods_type=='2'?'nobor':'']">
+				<div v-if="goods_type=='1'">
+					<div class="hea_top flex justify-between align-center">
+						<div class="flex align-center">
+							<span class="name">出厂价：</span><p class="flex align-center" v-if="price>0"><span class="doll">¥</span><span class="price">{{price}}</span></p><span class="price2" v-else>面议</span><span class="unit">/{{unit}}</span><span class="min">{{min_nums}}{{unit}}起批</span>
+						</div>
+						<div class="share flex align-center justify-center" @click="login">
+							<img class="shareImg" src="./images/share.png">
+							<span>分享</span>
+						</div>
+					</div>
+					<div class="ypay" v-if="deposit_money>0">
+						<span class="name">预付款：</span><span class="doll">¥</span><span class="price3">{{deposit_money}}</span>
+						<img class="sign" src="./images/icon2.png" @click="login">
+					</div>
+				</div>
+				<div class="flex justify-between align-center">
+					<div class="title text-2">
+						{{name}}
+					</div>
+					<div class="share flex align-center justify-center" v-if="goods_type=='2'" @click="login">
+						<img class="shareImg" src="./images/share.png">
+						<span>分享</span>
+					</div>
+				</div>
+				<div class="padd_rig" v-if="pay_account.length>0">
+					<div class="supply flex align-center">
+						<span class="supply_name">本店支持</span>
+						<div class="supply_item flex align-center" v-for="(item,index) in pay_account" :key="index">
+							<img src="./images/right.png">
+							<span>{{item}}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<ul class="center">
+				<li class="flex">
+					<span class="key">流程</span><span class="val">1.支付预付款 - 2.出库后支付尾款 - 3.发货</span><img class="sign"src="./images/icon2.png" @click="login">		
+				</li>
+				<li class="flex">
+					<span class="key">发货地</span><span class="val">{{delivery_address}}</span>		
+				</li>
+				<li class="flex" v-if="spec_desc">
+					<span class="key">规格</span><span class="val">{{spec_desc}}</span>		
+				</li>
+				<li class="flex align-center" @click="login">
+					<span class="key">服务</span><span class="assure">担保交易</span><span class="val">担保交易是指用户享受“平台”信…</span>		
+				</li>
+			</ul>
+			<div class="content">
+				<div class="store flex align-center justify-between">
+					<img class="store_logo" :src="store_logo">
+					<div class="store_center flex flex-column justify-between">
+						<span class="store_name text-1">{{store_name}}</span>
+						<span class="store_product text-1">主营业务:{{company_product}}</span>
+					</div>
+					<div class="go" @click="login">进店逛逛</div>
+				</div>
+				<ul class="rz flex justify-between align-center">
+					<li class="flex align-center">
+						<img class="rzImg" src="./images/riconc.png" v-if="person=='1'">
+						<img class="rzImg" src="./images/ricon.png" v-else>
+						<span :class="['rzText',person==1?'active':'']">实名认证</span>
+					</li>
+					<li class="flex align-center">
+						<img class="rzImg" src="./images/riconc1.png" v-if="enterprise=='1'">
+						<img class="rzImg" src="./images/ricon1.png" v-else>
+						<span :class="['rzText',enterprise=='1'?'active':'']">企业认证</span>
+					</li>
+					<li class="flex align-center">
+						<img class="rzImg" src="./images/riconc22.png" v-if="account_status=='3'">
+						<img class="rzImg" src="./images/ricon2.png" v-else-if="account_status=='-1'">
+						<img class="rzImg" src="./images/riconc2.png" v-else>
+						<span :class="['rzText',account_status!=-1?'active':'']">对公账户认证</span>
+					</li>
+				</ul>
+				<div class="tjGoods" v-if="goodsArr.length>0">
+					<p class="tj">相关推荐</p>
+					<div class="swiper-container2">
+						<div class="swiper-wrapper">
+						    <div class="swiper-slide" v-for="(item,index) in goodsArr" :key="index" @click="login">
+						    		<div class="goodsList flex ">
+										<div class="goodsBox flex flex-column relative justify-between" v-for="(item2,index2) in item" :key="index2">
+											<img class="tjImg" :src="item2.thumb">
+											<img class="hot absolute" src="./images/index_hot.png" v-if="item2.goods_type=='2'">
+											<span class="tjTitle text-1">{{item2.name}}</span>
+											<p class="lineH " v-if="item2.price>0"><span class="tjdoll">¥</span><span class="tjPrice">{{item2.price}}</span></p>
+											<p class="lineH" v-else><span class="price3">面议</span></p>
+										</div>
+									</div>
+						    </div>		
+					    </div>
+					    <!-- 如果需要分页器 -->
+			    		<div class="swiper-pagination2"></div>
+					</div>					
+				</div>
+
+			</div>
+			<div class="detail flex justify-center align-center">
+					<img class="lineImg" src="./images/line-left.png">
+					<span class="detailName">商品详情</span>
+					<img class="lineImg" src="./images/line-rig.png">
+			</div>
+			<div class="bottom">
+				<div v-if="content">
+					<p class="botName">商品介绍</p>
+					<p class="mess">{{content}}</p>
+				</div>
+				<div class="goodsImg_box" v-if="images.length>0">
+					<p class="botName mar_bot">商品图片</p>
+					<img class="goodsImg" :src="item.thumb" v-for="(item,index) in images" :key="index">
+				</div>
+				<div class="process flex justify-center align-center">
+					<img class="lineImg" src="./images/line-left.png">
+					<span class="detailName color">交易流程</span>
+					<img class="lineImg" src="./images/line-rig.png">
+				</div>
+				<img class="goodsImg" src="./images/process.png">
+				<div class="process flex justify-center align-center">
+					<img class="lineImg" src="./images/line-left.png">
+					<span class="detailName color">温馨提示</span>
+					<img class="lineImg" src="./images/line-rig.png">
+				</div>
+				<div class="licen">
+					<p>1.交易方式及发票说明：交易方式支持个人帐户支付、对公账户支付，采用对公账户支付支持开具发票，采用个人账户支付不支持开具发票，请拍前联系卖家确认交易账户后再拍。</p>
+					<p>2、物流运费说明：请自行与卖家协商配送方式及运费，平台也可以提供找车服务。买家可自行安排自己熟悉的物流上门提货，也可由卖家安排物流，运费提付（货送到后运费直接付给物流即可）。根据到货地址远近及数量的多少，则运费不同。</p>
+					<p>3.在线下单：因木材行情价格波动较大，请用电话直接询价确认后再拍。</p>
+				</div>
+					<div class="process flex justify-center align-center">
+					<img class="lineImg" src="./images/line-left.png">
+					<span class="detailName color">内容声明</span>
+					<img class="lineImg" src="./images/line-rig.png">
+				</div>
+				<div class="illustrate">爱木头为第三方交易平台及互联网信息服务提供者，爱木头（含网站、客户端等）所展示的商品/服务的标题、价格、详情等信息内容系由商户经营者发布，其真实性、准确性和合法性均由商户经营者负责。爱木头提醒您购买商品/服务前注意谨慎核实，如您对商品/服务的标题、价格、详情等任何信息有任何疑问的，请在购买前与卖家沟通确认；爱木头存在海量商户，如您发现商户有任何违法/侵权信息，请立即向爱木头举报并提供有效线索。</div>
+			</div>
+		</div>
+		<div class="botDom flex justify-between align-center">
+			<div class="dom flex flex-column align-center" @click="login">
+				<img class="domImg" src="./images/icon3.png">
+				<span class="domText">商户主页</span>
+			</div>
+			<div class="dom flex flex-column align-center" @click="login">
+				<img class="domImg" src="./images/icon4.png">
+				<span class="domText">商品咨询</span>
+			</div>
+			<button :class="['buy',goods_type=='2'?'backcolor':'']" @click="login">立即购买</button>
+		</div>
+		<div class="dilgBg" v-if="bgshow" @click="closebg">
+			<img src="images/wxDown.png" alt="">
+		</div>
+	</div>
+	
+	</body>
+
+	<script>
+		
+	//loading层
+	var index = layer.load(1, {
+	shade: [0.5,'#000'] //0.1透明度的白色背景
+	});
+
+		 //2923  2832		
+		var vm = new Vue({
+    	el: "#appid",
+		data: {
+			id:'',
+			uid:'',
+			h5Api:'https://v1.52mutou.com/',
+			h5Url:'https://h5.52mutou.com/',
+			isapp:true,
+			bgshow:false,
+			price:'',
+			unit:'',
+			min_nums:'',
+			deposit_money:'',
+			name:'',
+			pay_account:[],
+			delivery_address:'',
+			store_logo:'',
+			store_name:'',
+			company_product:'',
+			content:'',
+			thumb:[],
+			person:'',
+			enterprise:'',
+			sale_price:'',
+			account_status:'',
+			images:[],
+			goods_type:'',
+			spec:'',
+			spec_desc:'',
+			goodsArr:[],
+		},
+		created:function(){
+			this.id=this.GetQueryString('id')
+			this.uid=this.GetQueryString('uid')
+		},
+		mounted:function(){
+			this.goodsDetail(this.id);
+			this.recommend(this.id);
+			
+		},
+		methods:{
+			close:function(){
+				this.isapp=false;
+			},
+			closebg(){
+				this.bgshow =false
+			},
+			openApp:function(){
+				var ua = navigator.userAgent.toLowerCase();
+				var isAndroid = ua.indexOf('android') > -1 || ua.indexOf('linux') > -1;
+				if(this.is_weixn()){//微信浏览器
+					this.bgshow =true
+				}else{//判断是否安装
+					if(isAndroid){
+						//android
+						//$('body').append("<iframe src="" style='display:none' target='' ></iframe>");//target为空防止在当前页面刷新
+						setTimeout(function(){window.location = 'https://www.52mutou.com/aimutou.apk'},600);
+					}else{
+						//ios
+						window.location = 'scheme://openapp';
+						setTimeout(function(){window.location = 'itms-apps://itunes.apple.com/app/id123456789'},25);
+					}
+				}
+			},
+			login:function(){
+				window.location.href =this.h5Url+'shareLogin.html?uid='+this.uid
+			},
+			GetQueryString:function(name){
+				var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+				var r = window.location.search.substr(1).match(reg);//search,查询？后面的参数，并匹配正则
+				if(r!=null){
+					return  unescape(r[2]);
+				} else{
+					return null;
+				}
+			},
+			is_weixn(){
+				var ua = navigator.userAgent.toLowerCase();
+				var isWeixin = ua.indexOf('micromessenger') != -1;
+				if (isWeixin) {
+					return true;
+				}else{
+					return false;
+				}
+			},
+			goodsDetail:function (id) {
+				var self = this;
+				$.ajax({
+					url : self.h5Api+"api/index/goodsDetail",
+					async: false,
+					type : "GET",
+					headers: {
+						'Accept': 'application/vnd.mutou.v2.0+json',
+						'Authorization':'Bearer '+''
+					},
+					data:{id:id},
+					success:function(data){
+						layer.close(index);
+						if(data.code== '000'){
+							let keys = data.data;
+							self.price=keys.price;
+							self.unit=keys.unit;
+							self.min_nums=keys.min_nums;
+							self.deposit_money=keys.deposit_money;
+							self.name=keys.name;
+							self.pay_account=keys.pay_account;
+							self.delivery_address=keys.delivery_address;
+							self.store_logo=keys.store_logo;
+							self.store_name=keys.store_name;
+							self.company_product=keys.company_product;
+							self.content=keys.content;
+							self.thumb=keys.thumb;
+							self.person=keys.person;
+							self.enterprise=keys.enterprise;
+							self.account_status=keys.account_status;
+							self.images=keys.images;
+							self.sale_price=keys.sale_price;
+							self.goods_type=keys.goods_type;
+							self.spec_desc=keys.spec_desc;
+
+							// var spec_name=''; var spec_list='';
+							// if(Array.isArray(keys.spec_name)){   
+							// }else{
+							// 	for(var k in keys.spec_name){
+							// 		spec_name+=keys.spec_name[k]+'*';
+							// 	}
+							// 	spec_name=spec_name.substring(0,spec_name.length-1)+':';
+							// }
+							// keys.spec_list.forEach((item,index)=>{
+							// 	spec_list+=item.name+',';
+							// })
+							// spec_list=spec_list.substring(0,spec_list.length-1);
+							// self.spec=spec_name+spec_list;
+						}else{
+							layer.msg(data.msg,{time: 2000})
+							return false;
+						}
+					}
+				});
+			},
+			recommend:function(id){
+				var self = this;
+				$.ajax({
+					url : self.h5Api+"api/index/goodsRecommend",
+					async: false,
+					type : "GET",
+					headers: {
+						'Accept': 'application/vnd.mutou.v2.0+json',
+						'Authorization':'Bearer '+''
+					},
+					data:{id:id},
+					success:function(data){
+						if(data.code== '000'){
+							var arr = data.data;
+							var goodsArr = new Array(); //先声明一维数组
+							var count=Math.ceil(arr.length/3);
+							var Arr0=[];var Arr1=[];var Arr2=[];
+							arr.forEach((item,index)=>{
+								var xb=parseInt(index/3); 
+								if(xb == 0){
+									Arr0.push(item);
+								}else if(xb == 1){
+									Arr1.push(item);
+								}else if(xb == 2){
+									Arr2.push(item);
+								}
+							})
+							if(count == 1){
+								goodsArr.push(Arr0);
+							}else if(count == 2){
+								goodsArr.push(Arr0);
+								goodsArr.push(Arr1);
+							}else if(count == 3){
+								goodsArr.push(Arr0);
+								goodsArr.push(Arr1);
+								goodsArr.push(Arr2);
+							}
+							self.goodsArr=goodsArr;
+						}
+						// else{
+						// 	layer.msg(data.msg,{time: 2000})
+						// 	return false;
+						// }
+					}
+				});
+			}
+		},
+	});
+
+	</script>
+			<script>
+			//适配
+			(function(doc, win) {
+				var docEl = doc.documentElement,
+					resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+					recalc = function() {
+						var clientWidth = docEl.clientWidth;
+						if (!clientWidth) return;
+						if (clientWidth >= 750) {
+							docEl.style.fontSize = '100px';
+						} else {
+							docEl.style.fontSize = 100 * (clientWidth / 750) + 'px';
+						}
+					};
+
+				if (!doc.addEventListener) return;
+				win.addEventListener(resizeEvt, recalc, false);
+				doc.addEventListener('DOMContentLoaded', recalc, false);
+			})(document, window);
+		</script>
+		<script>        
+		  var mySwiper = new Swiper ('.swiper-container', {
+		  	// direction: 'vertical', // 垂直切换选项
+		    loop: true, autoplay:true,speed:300,
+		    pagination: {    // 如果需要分页器
+		      el: '.swiper-pagination',
+		    },
+		  })    
+		  var mySwiper2 = new Swiper ('.swiper-container2', {
+		  	// direction: 'vertical', // 垂直切换选项
+		    loop: true, autoplay:true,speed:300,
+		    pagination: {    // 如果需要分页器
+		      el: '.swiper-pagination2',
+		    },
+		  })     
+  		</script>
+</html>

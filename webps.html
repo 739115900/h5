@@ -1,0 +1,285 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>设置密码</title>
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+		<meta http-equiv="description" content="This is my page">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="viewport"
+			content="initial-scale=1,width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta content="yes" name="apple-touch-fullscreen">
+		<meta name="App-Config"
+			content="fullscreen=yes,useHistoryState=yes,transition=yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="format-detection" content="telephone=no,email=no">
+		<link rel="stylesheet" type="text/css" href="./css/H5/password.css">
+		<link rel="stylesheet" type="text/css" href="./css/H5/microdone-h5.css">
+		<script type="text/javascript" src="./js/jquery-2.1.4.min.js"></script>
+		<script src="./layer/layer.js"></script>
+		<script type="text/javascript" src="./js/microdoneH5.js?t=v1.2"></script>
+		<script type="text/javascript" src="./js/jweixin-1.3.2.js"></script>
+		<script type="text/javascript">
+			//获取url后面参数
+			function GetQueryString(name){
+				var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+				var r = window.location.search.substr(1).match(reg);//search,查询？后面的参数，并匹配正则
+				if(r!=null)return  unescape(r[2]); return null;
+			}
+			// console.log(GetQueryString('apiurl'))
+			var baseUrl = GetQueryString('apiurl')
+			var token = GetQueryString('token')
+			var root = GetQueryString('root')
+			var txn_seqno,tokendata
+			//var baseUrl='https://testapi.1mutou.com/'
+			// var token='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvdGVzdGFwaS4xbXV0b3UuY29tXC9hcGlcL2F1dGhcL2NoZWNrIiwiaWF0IjoxNTcyOTM3MzM2LCJleHAiOjE1NzMxOTY1MzYsIm5iZiI6MTU3MjkzNzMzNiwianRpIjoiWUx4cHNTWmRWWWJ3NnJRbyIsInN1YiI6MjE0NywicHJ2IjoiODY2NWFlOTc3NWNmMjZmNmI4ZTQ5NmY4NmZhNTM2ZDY4ZGQ3MTgxOCJ9.giy8bLGL9ir7vYpspVbB0VkKmXh04N2NvL9mL1yMFlc'
+			//var token='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvdGVzdGFwaS4xbXV0b3UuY29tXC9hcGlcL2F1dGhcL2NoZWNrIiwiaWF0IjoxNTcyODMwNTg3LCJleHAiOjE1NzMwODk3ODcsIm5iZiI6MTU3MjgzMDU4NywianRpIjoiS0NzUVRrVGJzZGV5YTFQRCIsInN1YiI6MjE0NSwicHJ2IjoiODY2NWFlOTc3NWNmMjZmNmI4ZTQ5NmY4NmZhNTM2ZDY4ZGQ3MTgxOCJ9.taLP_sqC85HI5f1QTIB5ZV555Y7BtxWrU_lZ7LsWC5s'
+			//decodeURIComponent()
+			var randomData= getRandom();
+			function getRandom(){
+				var res;
+				// var param = {flag_chnl:"H5"};
+				$.ajax({
+					url : baseUrl+"api/wallet/getRandomKey",
+					async: false,
+					type : "GET",
+					// dataType : "json",
+					headers: {
+						'Authorization':'Bearer '+token
+					},
+					// beforeSend: function (XMLHttpRequest) {
+					// 	XMLHttpRequest.setRequestHeader("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvZGVtby41Mm11dG91LmNvbVwvYXBpXC9hdXRoXC9jaGVjayIsImlhdCI6MTU3MjI0NDAzNiwiZXhwIjoxNTcyNTAzMjM2LCJuYmYiOjE1NzIyNDQwMzYsImp0aSI6InJveEVpcjVRMDNMb3Y2cm8iLCJzdWIiOjIxNDcsInBydiI6Ijg2NjVhZTk3NzVjZjI2ZjZiOGU0OTZmODZmYTUzNmQ2OGRkNzE4MTgifQ.KYToEQW0DXNsIMI2YJmbmvCY7BTbkWc7vBDz-CRKzIs");
+					// },
+					// data:param,
+					success:function(data){
+						if(data.code){
+							if(data.code == '000'){
+								$("#random_key").val(data.random_key);
+								$("#random_value").val(data.random_value);
+								res = data;
+								return data;
+							}else{
+								layer.msg('获取随机因子失败',{time: 2000})
+								return false;
+							}
+						}else{
+							layer.msg('获取随机因子失败',{time: 2000})
+							return false;
+						}
+					}
+				});
+				return res.data;
+			}
+			var countdown = 60;
+			function settime(obj) {//定时倒计时
+			if (countdown == 0) {
+				obj.removeClass('bgcolor');
+				obj.html("发送验证码");
+				countdown = 60;
+				return;
+			} else {
+				obj.addClass('bgcolor');
+				obj.html(countdown+"秒");
+				countdown--;
+			}
+			setTimeout(function() {
+				settime(obj) }
+				,1000)
+			}
+		
+			var kb = new keyBoard( {
+			"chaosMode" : 1, // 混乱模式,0:无混乱;1:打开时乱一次;2:每输入一个字符乱一次,默认值0
+			"pressStatus" : 1, // 按键状态,0:按下、抬起按键无变化;1:按下、抬起按键的颜色变化,默认值0
+			"kbType" : 0, // 键盘类型,0:全键盘;1:纯数字键盘,默认值0
+			"svg" : "svg",//svg图片的地址
+			"hasMap" : "1",//是否调用mapping值：当为1时调用，当为非1时，不调用
+			"license" : randomData.license
+			});
+			//设置映射数组,此处为了方便demo演示，写死了，正常应该由
+			//服务器端下发映射数组
+			passGuard.ib = randomData.map_arr;
+			
+			var passGuard1 = new passGuard(
+			{
+				
+				"maxLength" : 6, // 最大输入长度
+				"displayMode" : 0, // 显示形式,0:星号;1:明文,默认值0
+				"callBack" : cb1, //成功回调
+				"errorCallBack" : cb1, //失败回调
+				"focus":inputFocus1,//H5键盘获取焦点回调
+				"blur":inputBlur1,//H5键盘失去焦点回调
+				"rsaPublicKey" : randomData.rsa_public_content
+			});
+			var passGuard2 = new passGuard(
+			{
+				"jump": 1, //是否用添加删除回调：1代表使用，0代表不使用(可用于6个格子)
+				"add": tianjia, //输入框值添加回调,当jump为1时，才有回调
+				"del": jianshao, //输入框值减少回调,当jump为1时，才有回调
+				"fixed":"H5fixed",//当fixed接口添加时，代表该输入框在fixed覆盖层上且覆盖层的ID为接口的值(在demo中覆盖层ID为"H5fixed")
+				"maxLength" : 6, // 最大输入长度
+				"displayMode" : 0, // 显示形式,0:星号;1:明文,默认值0
+				"callBack" : cb2, //成功回调
+				"errorCallBack" : cb2, //失败回调
+				"focus":inputFocus2,//H5键盘获取焦点回调
+				"blur":inputBlur2,//H5键盘失去焦点回调
+				"rsaPublicKey" : randomData.rsa_public_content
+			});
+			
+			
+		
+		
+			function formSubmit(){//提交
+				var random_key = randomData.random_key
+				var codeval = $('#codeval').val()
+				 if(passGuard1.getLength()==0){
+					layer.msg('密码不能为空',{time: 2000})
+					return false;
+				}else if(passGuard2.getLength()==0){
+					layer.msg('确认密码不能为空',{time: 2000})
+					return false;
+				}else if(passGuard1.getHash() != passGuard2.getHash()){
+					layer.msg('两次密码不一致',{time: 2000})
+					return false;
+				}else{
+					passGuard1.setRandKey(randomData.random_value);
+					var password = passGuard1.getOutput()
+					$.ajax({
+						url : baseUrl+"api/wallet/applyEnterpriseAccount",
+						async: false,
+						type : "POST",
+						headers: {
+							'Authorization':'Bearer '+token
+						},
+						data:{
+							password:password,
+							random_key:random_key
+						},
+						success:function(res){
+							if(res.code=='000'){
+								layer.msg(res.msg,{time: 2000});
+								if(root&&root==1){
+									setTimeout(function(){
+										Toaster.postMessage('10');
+									},2000)
+								}
+								setTimeout(function(){
+									wx.miniProgram.switchTab({//跳转我的账户
+										url:'../my/my'
+									}) 
+								},1000)
+							}else{
+								layer.msg(res.msg,{time: 2000})
+								passGuard.ib = randomData.map_arr;
+								$('#kb1').val('')
+								$('#kb2').val('')
+								
+							}
+
+						}
+
+					})
+				}
+				
+				
+			}
+			function inputFocus1(){
+				
+			}
+			function inputBlur1(){
+				
+			}
+			function cb1() {
+				
+			}
+			function inputFocus2(){
+				
+			}
+			function inputBlur2(){
+				
+			}
+			function cb2() {
+				
+			}
+
+		
+			
+			
+			function tianjia(xh) { //xh为密码的长度
+				/**
+				*	长度超过多少隐藏键盘
+				*/
+				if(xh == 6) {
+					kb.hide();
+				}
+			}
+			function jianshao(xh) {
+				console.log(xh)
+			}
+
+			
+</script>
+	</head>
+	<body style="background-color: #f7f7f7;">
+		
+		<form id="form1" name="form1" method="post" action="return false;">
+			<div class="gbankcont" style="margin-top: 0;"> 
+				<div class="topsss">为确保账户安全，请设置连连支付密码<p>
+					建议勿与银行卡密码相同</p></div>
+				<div class="botPassword">
+					<div class="itemput">
+						<span>支付密码</span>
+						<input type="text" readonly="readonly" id="kb1" name="input3"
+											placeholder="请输入6位数支付密码" class="default"
+											maxlength="50" tabindex="2" />
+					</div>
+					<div class="itemput">
+						<span>确认密码</span>
+						<input type="text" readonly="readonly" id="kb2" name="input3"
+											placeholder="请再次确认密码" class="default"
+											maxlength="50" tabindex="2" />
+					</div>
+				
+				</div>
+				
+			</div>
+			<div class="Login">
+				<div class="LoginBtn" ontouchstart="javascript:kb.hide();" onclick="javascript:formSubmit();">提交</div>
+			</div>
+			
+		</form>
+
+<script type="text/javascript">
+	window.onload = function() {
+		//初始化密码卫士,绑定键盘对象。数字参数：0代表全键盘，1代表数字键盘
+		passGuard1.generate("kb1", kb, "passGuard1",1);
+		passGuard2.generate("kb2", kb, "passGuard2",1);
+		setTimeout(function() {
+			kb.generate();
+			Show = 0;
+		}, 100);
+		// 点击发送验证码
+		// $('.codebtn').on('click',function(){//点击提交code
+		// 	var inputVal = $('#codeval').val()
+		// 	var TEL_REGEXP = /^1(3|4|5|6|7|8|9)\d{9}$/
+		// 	var bankNum = $('#bankNum').val()
+		// 	var phone = $('#phone').val()
+			
+		// 	if(bankNum==''){
+		// 		layer.msg('请输入银行卡号')
+		// 	}else if(phone==''){
+		// 		layer.msg('请输入手机号')
+		// 	} else if (!TEL_REGEXP.test(phone)) {
+		// 		layer.msg('请输入正确的手机号')
+		// 	}else{
+		// 		codeajax(bankNum,phone)
+				
+		// 	}
+			
+		// })
+	};
+</script>
+	</body>
+</html>

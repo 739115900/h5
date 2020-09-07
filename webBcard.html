@@ -1,0 +1,326 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>绑定银行卡</title>
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+		<meta http-equiv="description" content="This is my page">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="viewport"
+			content="initial-scale=1,width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta content="yes" name="apple-touch-fullscreen">
+		<meta name="App-Config"
+			content="fullscreen=yes,useHistoryState=yes,transition=yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="format-detection" content="telephone=no,email=no">
+		<link rel="stylesheet" type="text/css" href="./css/H5/password.css">
+		<link rel="stylesheet" type="text/css" href="./css/H5/microdone-h5.css">
+		<script type="text/javascript" src="./js/jquery-2.1.4.min.js"></script>
+		<script src="./layer/layer.js"></script>
+		<script type="text/javascript" src="./js/microdoneH5.js?t=v1.2"></script>
+		<script type="text/javascript" src="./js/jweixin-1.3.2.js"></script>
+		<script type="text/javascript">
+			//获取url后面参数
+			function GetQueryString(name){
+				var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+				var r = window.location.search.substr(1).match(reg);//search,查询？后面的参数，并匹配正则
+				if(r!=null)return  unescape(r[2]); return null;
+			}
+
+			var baseUrl = GetQueryString('apiurl')
+			var token = GetQueryString('token')
+			var txn_seqno,tokendata
+			//var baseUrl='https://testapi.1mutou.com/'
+			// var token='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvdGVzdGFwaS4xbXV0b3UuY29tXC9hcGlcL2F1dGhcL2NoZWNrIiwiaWF0IjoxNTcyODU5OTk0LCJleHAiOjE1NzMxMTkxOTQsIm5iZiI6MTU3Mjg1OTk5NCwianRpIjoibGNmdm1PSm5FSEljMmtIMSIsInN1YiI6MjE0NywicHJ2IjoiODY2NWFlOTc3NWNmMjZmNmI4ZTQ5NmY4NmZhNTM2ZDY4ZGQ3MTgxOCJ9.-JrcN168RpDVCjAKPa3C9VeN_WYnQ6w-Mv3arNu4n9w'
+			//var token='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvdGVzdGFwaS4xbXV0b3UuY29tXC9hcGlcL2F1dGhcL2NoZWNrIiwiaWF0IjoxNTcyODMwNTg3LCJleHAiOjE1NzMwODk3ODcsIm5iZiI6MTU3MjgzMDU4NywianRpIjoiS0NzUVRrVGJzZGV5YTFQRCIsInN1YiI6MjE0NSwicHJ2IjoiODY2NWFlOTc3NWNmMjZmNmI4ZTQ5NmY4NmZhNTM2ZDY4ZGQ3MTgxOCJ9.taLP_sqC85HI5f1QTIB5ZV555Y7BtxWrU_lZ7LsWC5s'
+			//decodeURIComponent()
+			var randomData= getRandom();
+			function getRandom(){            //获取密码因子
+				var res;
+				// var param = {flag_chnl:"H5"};
+				$.ajax({
+					url : baseUrl+"api/wallet/getRandomKey",
+					async: false,
+					type : "GET",
+					// dataType : "json",
+					headers: {
+						'Authorization':'Bearer '+token
+					},
+					// beforeSend: function (XMLHttpRequest) {
+					// 	XMLHttpRequest.setRequestHeader("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvZGVtby41Mm11dG91LmNvbVwvYXBpXC9hdXRoXC9jaGVjayIsImlhdCI6MTU3MjI0NDAzNiwiZXhwIjoxNTcyNTAzMjM2LCJuYmYiOjE1NzIyNDQwMzYsImp0aSI6InJveEVpcjVRMDNMb3Y2cm8iLCJzdWIiOjIxNDcsInBydiI6Ijg2NjVhZTk3NzVjZjI2ZjZiOGU0OTZmODZmYTUzNmQ2OGRkNzE4MTgifQ.KYToEQW0DXNsIMI2YJmbmvCY7BTbkWc7vBDz-CRKzIs");
+					// },
+					// data:param,
+					success:function(data){
+						if(data.code){
+							if(data.code == '000'){
+								$("#random_key").val(data.random_key);
+								$("#random_value").val(data.random_value);
+								res = data;
+								return data;
+							}else{
+								layer.msg('获取随机因子失败',{time: 2000})
+								return false;
+							}
+						}else{
+							layer.msg('获取随机因子失败',{time: 2000})
+							return false;
+						}
+					}
+				});
+				return res.data;
+			}
+		
+			var kb = new keyBoard( {
+			"chaosMode" : 1, // 混乱模式,0:无混乱;1:打开时乱一次;2:每输入一个字符乱一次,默认值0
+			"pressStatus" : 1, // 按键状态,0:按下、抬起按键无变化;1:按下、抬起按键的颜色变化,默认值0
+			"kbType" : 0, // 键盘类型,0:全键盘;1:纯数字键盘,默认值0
+			"svg" : "svg",//svg图片的地址
+			"hasMap" : "1",//是否调用mapping值：当为1时调用，当为非1时，不调用
+			"license" : randomData.license
+			});
+			//设置映射数组,此处为了方便demo演示，写死了，正常应该由
+			//服务器端下发映射数组
+			passGuard.ib = randomData.map_arr;
+			
+			var passGuard1 = new passGuard(
+			{
+				"jump": 1, //是否用添加删除回调：1代表使用，0代表不使用(可用于6个格子)
+				"add": tianjia, //输入框值添加回调,当jump为1时，才有回调
+				"del": jianshao, //输入框值减少回调,当jump为1时，才有回调
+				"fixed":"H5fixed",//当fixed接口添加时，代表该输入框在fixed覆盖层上且覆盖层的ID为接口的值(在demo中覆盖层ID为"H5fixed")
+				"maxLength" : 6, // 最大输入长度
+				"regExp1" : "", // 输入过程限制的正则
+				"regExp2" : "",
+				"displayMode" : 0, // 显示形式,0:星号;1:明文,默认值0
+				"callBack" : cb1, //成功回调
+				"errorCallBack" : cb1, //失败回调
+				"focus":inputFocus1,//H5键盘获取焦点回调
+				"blur":inputBlur1,//H5键盘失去焦点回调
+				"rsaPublicKey" : randomData.rsa_public_content
+			});
+			
+			
+			
+		
+		
+			function formSubmit(){//提交
+				let passwordLength = $('#kb1').val().length
+				if(passwordLength==6){
+					// passGuard1.setRandKey(randomData.random_value);
+					// var password = passGuard1.getOutput()
+					// var random_key = randomData.random_key
+					var codeval = $('#codeval').val()
+					if(codeval == ''){
+						layer.msg("请输入验证码",{time: 2000})
+					}
+					$.ajax({
+						url : baseUrl+"api/wallet/verifyBindCard",
+						async: false,
+						type : "POST",
+						headers: {
+							'Authorization':'Bearer '+token
+						},
+						data:{
+							txn_seqno:txn_seqno,
+							token:tokendata,
+							verify_code:codeval,
+						},
+						success:function(res){
+							if(res.code=='000'){
+								layer.msg(res.msg,{time: 2000})
+								if(root&&root==1){
+								setTimeout(function(){
+										Toaster.postMessage('5');
+									},2000)
+								}
+								setTimeout(function(){
+									wx.miniProgram.navigateTo({//跳转我的账户
+										url:'../manageCard/manageCard'
+									}) 
+								},1000)
+							}else{
+								layer.msg(res.msg,{time: 2000})
+								getRandom()
+								$('#kb1').val('')
+								$('.kb1 li').html('')
+								passGuard.ib = randomData.map_arr;
+							}
+
+						}
+
+					})
+				}else{
+					layer.msg('请填写完整的信息',{time: 2000})
+				}
+				
+			}
+			function inputFocus1(){
+				
+			}
+			function inputBlur1(){
+				
+			}
+			function cb1() {
+				
+			}
+			
+			var countdown = 60;
+			function settime(obj) {//定时倒计时
+				if (countdown == 0) {
+					obj.removeClass('bgcolor');
+					obj.html("发送验证码");
+					countdown = 60;
+					return;
+				} else {
+					obj.addClass('bgcolor');
+					obj.html(countdown+"秒");
+					countdown--;
+				}
+				setTimeout(function() {
+					settime(obj) }
+					,1000)
+			}
+			function codeajax(bankNum,phone,password,random_key){//获取验证码
+				$.ajax({
+					url : baseUrl+"api/wallet/applyBindCard",
+					async: false,
+					type : "POST",
+					headers: {
+						'Authorization':'Bearer '+token
+					},
+					data:{
+						card_no:bankNum,
+						card_phone:phone,
+						password:password,
+						random_key:random_key
+					},
+					success:function(res){
+						if(res.code=='000'){
+							settime($('.codebtn'))
+							layer.msg(res.msg,{time: 2000})
+							txn_seqno = res.data.txn_seqno
+							tokendata = res.data.token
+						}else{
+							layer.msg(res.msg,{time: 2000})
+							$('.alertCode').hide()
+							$('#codeNum').val('')
+							$('.radiospan li').html('')
+						}
+					}
+				})
+			}
+			
+			
+			function tianjia(xh) { //xh为密码的长度
+				/**
+				*	长度超过多少隐藏键盘
+				*/
+				if(xh == 6) {
+					kb.hide();
+				}
+			}
+			function jianshao(xh) {
+				console.log(xh)
+			}
+
+			
+	</script>
+	<style>
+		.topbox, .botPassword{
+			padding:0 15px;
+		}
+		.Login{
+			margin-top:50px;
+		}
+	</style>
+</head>
+<body style="background-color: #f7f7f7;">
+		
+		<form id="form1" name="form1" method="post" >
+			<div class="gbankcont">
+				<div class="topbox">
+					<div class="itemput">
+						<span>银行卡号</span>
+						<input type="number" placeholder="请输入银行卡号" id="bankNum" >
+					</div>
+					<div class="itemput">
+						<span>手机号</span>
+						<input type="tel" placeholder="请输入银行预留手机号" maxlength="11" id="phone" >
+					</div>
+
+				</div>
+
+				<div class="botPassword">
+					<div class="itemput">
+						<span>支付密码</span>
+						<input type="text" readonly="readonly" unselectable="on" οnfοcus="this.blur()" id="kb1" name="input3"
+													placeholder="请输入账户支付密码" class="default"
+													maxlength="50" tabindex="2" />
+					</div>
+					<div class="itemput">
+							<span>验证码</span>
+							<input type="tel" placeholder="请输入验证码" maxlength="6" id="codeval" >
+							<div class="codebtn">获取验证码</div>
+					</div>
+					
+				
+				</div>
+				<!-- <div class="aggrement">
+					<div class="icon checked"></div>
+					<p>本账户由连连支付提供，我已阅读并同意 <a href="">《连连账户开通协议》</a></p>
+				</div> -->
+			</div>
+			<div class="Login">
+				<div class="LoginBtn" ontouchstart="javascript:kb.hide();" onclick="javascript:formSubmit();">提交</div>
+			</div>
+			
+		</form>
+
+<script type="text/javascript">
+	window.onload = function() {
+		//初始化密码卫士,绑定键盘对象。数字参数：0代表全键盘，1代表数字键盘
+		passGuard1.generate("kb1", kb, "passGuard1",1);
+	
+		setTimeout(function() {
+			kb.generate();
+			Show = 0;
+		}, 100);
+		// 点击发送验证码
+		$('.codebtn').on('click',function(){//点击提交code
+			var inputVal = $('#codeval').val()
+			var TEL_REGEXP = /^1(3|4|5|6|7|8|9)\d{9}$/
+			var len = inputVal.length
+			var bankNum = $('#bankNum').val()
+			var phone = $('#phone').val()
+			
+
+			// console.log(bankNum)
+			// console.log(phone)
+			// console.log($('#kb1').val())
+			// console.log(randomData.random_key)
+			var passwordLength=$('#kb1').val().length;
+			var random_key=randomData.random_key;
+			if(bankNum==''){
+				layer.msg('请输入银行卡号')
+			}else if(phone==''){
+				layer.msg('请输入手机号')
+			} else if (!TEL_REGEXP.test(phone)) {
+				layer.msg('请输入正确的手机号')
+			}else if(passwordLength != 6){
+				layer.msg('请输入账户支付密码')
+			}else{
+				console.log(879)
+				passGuard1.setRandKey(randomData.random_value);
+				var password = passGuard1.getOutput()          //动态生成的支付密码串 （加密过程）
+				codeajax(bankNum,phone,password,random_key)
+				
+			}
+			
+		})
+	};
+</script>
+	</body>
+</html>

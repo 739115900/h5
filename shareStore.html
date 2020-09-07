@@ -1,0 +1,257 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>商户主页</title>
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="cache-control" content="no-cache">
+		<meta http-equiv="expires" content="0">
+		<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+		<meta http-equiv="description" content="This is my page">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="viewport"
+			content="initial-scale=1,width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta content="yes" name="apple-touch-fullscreen">
+		<meta name="App-Config"
+			content="fullscreen=yes,useHistoryState=yes,transition=yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="format-detection" content="telephone=no,email=no">
+		<link rel="stylesheet" type="text/css" href="./css/storeDetail.css">
+		<script type="text/javascript" src="./js/vue.js"></script>
+		<script type="text/javascript" src="./js/jquery-2.1.4.min.js"></script>
+		<script src="./layer/layer.js"></script>
+		
+		<style>
+			[v-cloak] {
+			display: none;
+			}
+			html{font-size: 50px;}
+			p{padding: 0;margin: 0}
+			
+		</style>
+		
+	</head>
+	<body style="margin: 0;background-color: #f7f7f7;">
+		<div id="appid" v-cloak  >
+			<div class="top relative flex align-center justify-between openapp" v-if="isapp">
+				<img class="close absolute" @click="close" src="./images/close.png">
+				<div class="flex align-center">
+					<img class="logo" src="./images/logo.png">
+					<span class="tip">下单请打开爱木头APP</span>
+				</div>
+				<div class="open" @click="openApp">打开APP</div>
+			</div>
+			<div class="topbg"></div>
+			<div class="btall">
+			<div class="topbox">
+			<div class="centertop" @click="login">
+				<div class="avatar"><img :src="storeLogo" alt=""></div>
+				<div class="rowCont1">
+					<div class="tip" v-if="storeTags.length >0">{{storeTags[0]}}</div>
+					<b >{{storeName}}</b>
+					<img src="images/arrow_right.png" alt="">
+				</div>
+			<div class="rowCont2">
+				<p>{{views}}浏览量</p>
+				<p class="shu">|</p>
+				<p>{{focusNums}}粉丝量</p>
+			</div>
+			<div class="rowCont3">
+				<div class="leftbtn">联系站长</div>
+				<div class="con"></div>
+				<div class="rightbtn">
+					<img src="images/send_icon.png" alt="">
+					<span>分享</span>
+				</div>
+			</div>
+			<div class="bottomIcon">
+				<div class="resIcon">
+					<img v-if="person==1" src="images/riconc.png" alt="">
+					<img v-else src="images/ricon.png" alt="">
+					<span>实名认证</span>
+				</div>
+				<div class="resIcon">
+					<img v-if="enterprise==1" src="images/riconc1.png" alt="">
+					<img v-else src="images/ricon1.png" alt="">
+					<span>企业认证</span>
+				</div>
+				<div class="resIcon">
+					<img v-if="account_status==3" src="images/riconc22.png" alt="">
+					<img v-else-if="account_status==-1" src="images/ricon2.png" alt="">
+					<img v-else src="images/riconc2.png" alt="">
+					<span>对公账户认证</span>
+				</div>
+			</div>
+			</div>
+			
+		</div>
+		<div class="vipBanner" @click="login">
+			<img src="images/vips.png" alt="">
+			<span>联系站长，领取VIP专享超值权益，更多低价等你来购</span>
+		</div>
+		<div class="productbox">
+			<div class="prolist" v-for="(item,index) in recommend" :key="item.id" @click="login">
+				<div class="topimgpro">
+					<!-- <img class="hot"  src="images/index_hot.png" alt=""> -->
+					<img class="goodspicture" :src="item.thumb" alt="">
+				</div>
+				<div class="botbox">
+					<div class="title">{{item.name}}</div>
+					<div class="caseName">
+						<div class="span1">{{item.class_name}}</div>
+						<div class="span2" v-if="item.trade_type==1" >预付款</div>
+					</div>
+					<p class="address">发货地：{{item.city_name}}</p>
+					<div class="priceboxs">
+						<div class="pricebox">
+							<p class="priceUnit">¥</p>
+							<p class="price">{{item.price}}</p>
+							<p class="unit">/{{item.unit}}</p>
+						</div>
+						<!-- <div class="sealprice">
+							<p class="priceUnit">¥</p>
+							<p class="price">{{item.name}}</p>
+							<p class="unit">/{{item.name}}</p>
+						</div> -->
+					</div>
+				</div>
+			</div>
+		
+			
+		</div>
+			</div>
+			<div class="dilgBg" v-if="bgshow" @click="closebg">
+				<img src="images/wxDown.png" alt="">
+			</div>
+		</div>
+
+		
+	</body>
+	<script>
+		//适配
+		(function(doc, win) {
+				var docEl = doc.documentElement,
+					resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+					recalc = function() {
+						var clientWidth = docEl.clientWidth;
+						if (!clientWidth) return;
+						if (clientWidth >= 750) {
+							docEl.style.fontSize = '100px';
+						} else {
+							docEl.style.fontSize = 100 * (clientWidth / 750) + 'px';
+						}
+					};
+
+				if (!doc.addEventListener) return;
+				win.addEventListener(resizeEvt, recalc, false);
+				doc.addEventListener('DOMContentLoaded', recalc, false);
+			})(document, window);
+			//loading层
+			var index = layer.load(1, {
+			shade: [0.5,'#000'] //0.1透明度的白色背景
+			});
+		//var baseUrl='https://testapi.1mutou.com/'
+		function GetQueryString(name){
+			var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+			var r = window.location.search.substr(1).match(reg);//search,查询？后面的参数，并匹配正则
+			if(r!=null)return  unescape(r[2]); return null;
+		}
+		var id = GetQueryString('id')
+		var uid = GetQueryString('uid')
+		var vm = new Vue({
+    	el: "#appid",
+		data: {
+			isapp:true,
+			bgshow:false,
+			storeLogo:'',
+			storeName:'',
+			storeTags:[],
+			views:'',
+			focusNums:'',
+			person:0,
+			enterprise:0,
+			account_status:-1,
+			recommend:[],
+			h5Api:'https://v1.52mutou.com/',
+			h5Url:'https://h5.52mutou.com/',
+		},
+		mounted:function(){
+			this.showData();
+			//需要执行的方法可以在mounted中进行触发，其获取的数据可以赋到data中后，可以放在前面进行渲染
+		},
+		methods:{
+			close:function(){
+				this.isapp=false;
+			},
+			closebg(){
+				this.bgshow =false
+			},
+			openApp:function(){
+				var ua = navigator.userAgent.toLowerCase();
+				var isAndroid = ua.indexOf('android') > -1 || ua.indexOf('linux') > -1;
+				if(this.is_weixn()){//微信浏览器
+					this.bgshow =true
+				}else{//判断是否安装
+					if(isAndroid){
+						//android
+						//$('body').append("<iframe src="" style='display:none' target='' ></iframe>");//target为空防止在当前页面刷新
+						setTimeout(function(){window.location = 'https://www.52mutou.com/aimutou.apk'},600);
+					}else{
+						//ios
+						window.location = 'scheme://openapp';
+						setTimeout(function(){window.location = 'itms-apps://itunes.apple.com/app/id123456789'},25);
+					}
+				}
+				
+			},
+			login:function(){
+				window.location.href =this.h5Url+'shareLogin.html?uid='+uid;
+			},
+			is_weixn(){
+				var ua = navigator.userAgent.toLowerCase();
+				var isWeixin = ua.indexOf('micromessenger') != -1;
+				if (isWeixin) {
+					return true;
+				}else{
+					return false;
+				}
+			},
+			showData:function () {
+				var self = this;
+				$.ajax({
+					url : self.h5Api+"api/store/getStoreInfo",
+					async: false,
+					type : "GET",
+					headers: {
+						'Accept': 'application/vnd.mutou.v2.0+json',
+						'Authorization':'Bearer '+''
+					},
+					// beforeSend: function (XMLHttpRequest) {
+					// 	XMLHttpRequest.setRequestHeader("Authorization", "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvZGVtby41Mm11dG91LmNvbVwvYXBpXC9hdXRoXC9jaGVjayIsImlhdCI6MTU3MjI0NDAzNiwiZXhwIjoxNTcyNTAzMjM2LCJuYmYiOjE1NzIyNDQwMzYsImp0aSI6InJveEVpcjVRMDNMb3Y2cm8iLCJzdWIiOjIxNDcsInBydiI6Ijg2NjVhZTk3NzVjZjI2ZjZiOGU0OTZmODZmYTUzNmQ2OGRkNzE4MTgifQ.KYToEQW0DXNsIMI2YJmbmvCY7BTbkWc7vBDz-CRKzIs");
+					// },
+					data:{id:id},
+					success:function(data){
+						layer.close(index);
+						if(data.code== '000'){
+							let keys = data.data;
+							self.storeLogo=keys.store_logo;
+							self.storeName=keys.store_name;
+							self.storeTags = keys.store_tags;
+							self.views = keys.views;
+							self.focusNums = keys.focus_nums;
+							self.person = keys.person;
+							self.enterprise = keys.enterprise;
+							self.account_status = keys.account_status;
+							self.recommend =keys.recommend;
+						}else{
+							layer.msg(data.msg,{time: 2000})
+							return false;
+						}
+					}
+				});
+				
+			},
+		},
+	});
+	</script>
+</html>
